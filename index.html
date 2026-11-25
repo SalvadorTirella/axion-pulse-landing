@@ -1,0 +1,380 @@
+<!doctype html>
+<html lang="es" class="intro-pending">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Axion Pulse — DAW multiplataforma de producción musical</title>
+  <meta name="description" content="Axion Pulse es un DAW para crear, interpretar y producir en Android y Windows. Proyectos portables, síntesis propia y una sesión que funciona sin conexión.">
+  <meta name="theme-color" content="#121212">
+  <link rel="icon" type="image/svg+xml" href="assets/emblem.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    html{background:#000}
+    body.loading{overflow:hidden}
+    .loading-screen{position:fixed;inset:0;background:#000;display:flex;place-items:center;justify-content:center;align-items:center;z-index:1000;pointer-events:none}
+  </style>
+  <script>
+    (function(){
+      var h=document.documentElement;
+      if (matchMedia('(prefers-reduced-motion: reduce)').matches) h.classList.add('reduce-motion');
+      if (matchMedia('(max-width: 1023px)').matches) h.classList.add('menu-mode');
+    })();
+  </script>
+  <link rel="stylesheet" href="css/style.css">
+  <script type="importmap">
+    { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js" } }
+  </script>
+</head>
+<body class="loading">
+
+  <!-- ============ PRELOADER ============ -->
+  <div class="loading-screen" id="loading-screen">
+    <canvas class="loader__canvas" aria-hidden="true"></canvas>
+    <p class="loader__count" aria-hidden="true"><span class="loader__count-value"></span><span class="loader__count-label">Cargando</span></p>
+    <div class="loading-screen__logo-container">
+      <!-- The Axion Pulse mark is the progress bar: the line draws itself as the page loads, then lights up cyan. -->
+      <svg class="loading-screen__emblem" viewBox="0 0 589 435" role="progressbar" aria-label="Cargando" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+        <path class="emblem-track" fill="none" stroke="#1E1E1E" stroke-width="36" stroke-linejoin="round" stroke-linecap="round" d="M30 251H78C103 251 118 207 140 207C154 207 165 219 175 235L206 284L277 31L356 404L399 296C419 246 434 207 454 207C477 207 494 251 520 251H559"/>
+        <path class="emblem-pulse" pathLength="1" fill="none" stroke="#505050" stroke-width="36" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="1 1.5" stroke-dashoffset="1.01" d="M30 251H78C103 251 118 207 140 207C154 207 165 219 175 235L206 284L277 31L356 404L399 296C419 246 434 207 454 207C477 207 494 251 520 251H559"/>
+      </svg>
+    </div>
+    <!-- shown only when the browser still blocks sound once loading ends: this click turns the track on -->
+    <div class="loader__gate" hidden>
+      <button class="loader__enter" type="button" data-tooltip-title="Explorar con audio"><span data-letter-roll>Explorar</span></button>
+      <button class="loader__mute" type="button" data-no-sound>Explorar en silencio</button>
+    </div>
+  </div>
+
+  <!-- ============ WEBGL ============ -->
+  <div class="canvas-container"><canvas class="webgl" aria-hidden="true"></canvas></div>
+
+  <!-- ============ CURSOR ============ -->
+  <div class="cursor" aria-hidden="true">
+    <svg class="cursor__ball cursor__ball--big" width="60" height="60" viewBox="-30 -30 60 60"><path d=""/></svg>
+    <svg class="cursor__ball cursor__ball--small" width="20" height="20" viewBox="0 0 20 20"><polygon points="10 2, 19 18, 1 18"/></svg>
+  </div>
+  <div class="cursor-tooltip" aria-hidden="true"></div>
+
+  <!-- ============ FRAME (fixed overlay) ============ -->
+  <div class="frame">
+    <header class="header">
+      <a class="header__logo" href="#top" aria-label="Axion Pulse, volver al inicio" data-tooltip-title="Inicio">
+        <span class="wordmark">AXION<span>PULSE</span></span>
+      </a>
+      <nav class="header__nav" aria-label="Principal">
+        <ul class="header__nav-list">
+          <li class="header__nav-item"><a class="header__nav-link" href="#flujo" data-letter-roll>Proceso</a></li>
+          <li class="header__nav-item"><a class="header__nav-link" href="#funciones" data-letter-roll>Herramientas</a></li>
+          <li class="header__nav-item"><a class="header__nav-link" href="#app" data-letter-roll>Interfaz</a></li>
+          <li class="header__nav-item"><a class="header__nav-link" href="#para-quien" data-letter-roll>Para quién</a></li>
+          <li class="header__nav-item"><a class="header__nav-link" href="#footer" data-letter-roll>Lanzamiento</a></li>
+        </ul>
+      </nav>
+      <button class="header__menu" type="button" aria-expanded="false" aria-label="Abrir menú"><span class="header__menu-label" data-letter-roll>Menú</span></button>
+    </header>
+    <div class="frame__bottom">
+      <div class="frame__start">
+        <a class="page-emblem" href="#top" aria-label="Volver al inicio">
+          <svg class="page-emblem__marks" viewBox="0 0 589 435" aria-hidden="true">
+            <path class="mark-line" fill="none" stroke="currentColor" stroke-width="36" stroke-linejoin="round" stroke-linecap="round" d="M30 251H78C103 251 118 207 140 207C154 207 165 219 175 235L206 284L277 31L356 404L399 296C419 246 434 207 454 207C477 207 494 251 520 251H559"/>
+          </svg>
+        </a>
+        <div class="frame__section" aria-live="polite"><span class="frame__section-inner"></span></div>
+      </div>
+      <div class="frame__end">
+        <button class="frame__bpm" type="button" aria-pressed="false" aria-label="Reproducir pieza musical" data-tooltip-title="Reproducir pieza"><i></i>120 BPM<span class="frame__sound">Escuchar</span></button>
+        <audio class="site-track" src="assets/audio/axion-pulse.mp3" preload="auto" loop></audio>
+      </div>
+    </div>
+  </div>
+
+  <!-- mobile menu -->
+  <div class="menu-overlay" aria-hidden="true">
+    <canvas class="triangle-cover"></canvas>
+    <ol class="menu-overlay__list">
+      <li><a href="#flujo">Proceso</a></li>
+      <li><a href="#funciones">Herramientas</a></li>
+      <li><a href="#app">Interfaz</a></li>
+      <li><a href="#para-quien">Para quién</a></li>
+      <li><a href="#footer">Lanzamiento</a></li>
+    </ol>
+  </div>
+
+  <div class="page-wrapper">
+    <main id="top">
+
+      <!-- ============ HERO ============ -->
+      <section class="hero" data-frame-section-number="00" data-frame-section-label="Axion Pulse">
+        <h1 class="visually-hidden">Axion Pulse: DAW multiplataforma de producción musical para Android y Windows</h1>
+        <div class="hero__content">
+          <span class="hero__location">Android · Windows · Sin conexión</span>
+          <p class="hero__title">Un DAW multiplataforma para crear, interpretar y producir desde donde estés.</p>
+        </div>
+      </section>
+
+      <!-- ============ STATEMENT (pinned) ============ -->
+      <section class="statement" data-frame-section-number="00" data-frame-section-label="Axion Pulse">
+        <div class="statement__content">
+          <p class="statement__text">La inmediatez de una idea. La profundidad de un estudio. Una misma sesión, de Android a Windows.</p>
+        </div>
+      </section>
+
+      <!-- ============ 01 PUNTO DE VISTA (white) ============ -->
+      <section class="home-section about" data-scroll-buffer="0.7" data-frame-section-number="01" data-frame-section-label="Visión">
+        <div class="about__pin">
+          <canvas class="about__mosaic" aria-hidden="true"></canvas>
+          <p class="section-label"><span>01</span>Visión</p>
+          <h2 class="home-section__heading about__heading">
+            <span class="about__line">De la intuición</span>
+            <span class="about__line about__line--end">a la precisión.</span>
+          </h2>
+          <div class="about__intro">
+            <p class="about__copy" data-scroll-words>Axion Pulse reúne la inmediatez de una sesión en vivo con la precisión de un entorno de producción. Su Session View ofrece ocho pistas y cinco espacios por pista para desarrollar variaciones con libertad. Síntesis propia, macros y automatización grabable dan profundidad a cada idea. El formato portable permite continuar un proyecto editable en Android o Windows, compartirlo con otros productores o guardarlo en una carpeta sincronizada.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ 02 FLUJO (pinned horizontal) ============ -->
+      <section class="home-section flow" id="flujo" data-scroll-buffer="0.7" data-frame-section-number="02" data-frame-section-label="Proceso creativo">
+        <div class="flow__pin">
+          <p class="section-label"><span>02</span>Proceso creativo</p>
+          <div class="flow__bar">
+            <h2 class="home-section__heading flow__label">De la idea <span>a la mezcla.</span></h2>
+            <span class="flow__rail" data-reveal="fade"><span></span></span>
+            <div class="flow__counter counter" data-count="5"></div>
+          </div>
+          <p class="flow__note" data-reveal="fade">Un recorrido creativo, de principio a fin, dentro de la misma sesión.</p>
+          <ul class="flow__track">
+            <li class="flow-step" data-reveal="row">
+              <span class="flow-step__num">01</span>
+              <h3 class="flow-step__title">Definí el pulso</h3>
+              <p class="flow-step__text">Construí el ritmo en Drum Rack: elegí un kit, programá kick, snare y hats en una grilla de semicorcheas y ajustá la intensidad de cada golpe con un gesto.</p>
+              <p class="flow-step__tags"><span>Drum Rack</span> <span>8 pads</span> <span>Secuenciación 1/16</span> <span>Captura con micrófono</span></p>
+            </li>
+            <li class="flow-step" data-reveal="row">
+              <span class="flow-step__num">02</span>
+              <h3 class="flow-step__title">Desarrollá variaciones</h3>
+              <p class="flow-step__text">Cada idea se convierte en un clip dentro de Session View. Ocho pistas y cinco espacios por pista mantienen tus variaciones organizadas y listas para el próximo compás.</p>
+              <p class="flow-step__tags"><span>Session View</span> <span>8 pistas × 5 espacios</span> <span>Clips de 1/4 a 16 compases</span></p>
+            </li>
+            <li class="flow-step" data-reveal="row">
+              <span class="flow-step__num">03</span>
+              <h3 class="flow-step__title">Diseñá bajo y armonía</h3>
+              <p class="flow-step__text">Explorá presets de Synth para subgraves, secuencias acid y arpegios. El Asistente de acordes propone nuevas posibilidades armónicas mientras la escala señala las notas compatibles.</p>
+              <p class="flow-step__tags"><span>Synth</span> <span>Presets</span> <span>Asistente de acordes</span> <span>Escala global</span></p>
+            </li>
+            <li class="flow-step" data-reveal="row">
+              <span class="flow-step__num">04</span>
+              <h3 class="flow-step__title">Interpretá la sesión</h3>
+              <p class="flow-step__text">Las Líneas activan conjuntos de clips al comienzo del siguiente compás. Cambiá de sección con precisión desde la pantalla o con un APC Key 25.</p>
+              <p class="flow-step__tags"><span>Líneas</span> <span>Lanzamiento cuantizado</span> <span>APC Key 25</span></p>
+            </li>
+            <li class="flow-step" data-reveal="row">
+              <span class="flow-step__num">05</span>
+              <h3 class="flow-step__title">Concretá la producción</h3>
+              <p class="flow-step__text">Organizá los clips en Arrangement, trazá automatizaciones, congelá pistas para optimizar recursos y exportá la mezcla en WAV o MP3.</p>
+              <p class="flow-step__tags"><span>Arrangement</span> <span>Automatización</span> <span>Congelación reversible</span> <span>WAV / MP3</span></p>
+            </li>
+            <li class="flow-step flow-step--cta">
+              <p class="flow-step__prompt">Cada gran proyecto tiene un comienzo.</p>
+              <a class="flow-step__cta" href="#tutorial" data-magnetic data-tooltip-title="Explorar el tutorial">Explorá <span>el tutorial.</span></a>
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- ============ 03 FUNCIONES (sticky counter + accordion) ============ -->
+      <section class="home-section services" id="funciones" data-scroll-buffer="0.7" data-frame-section-number="03" data-frame-section-label="Herramientas">
+        <p class="section-label"><span>03</span>Herramientas</p>
+        <div class="services__head">
+          <h2 class="home-section__heading">Ritmo.<br>Sonido.<br><span>Expresión.</span></h2>
+          <p class="services__intro" data-reveal="fade">Herramientas concebidas para convertir cada gesto en una decisión musical: síntesis, composición y control dentro de un mismo entorno.</p>
+        </div>
+        <div class="services__grid">
+          <aside class="services__aside" aria-hidden="true">
+            <div class="services__counter counter" data-count="8"></div>
+            <div class="services__ticks"></div>
+          </aside>
+          <ol class="services__list">
+            <li class="service" data-reveal="row">
+              <span class="service__num">01</span>
+              <h3 class="service__title">PULSE</h3>
+              <div class="service__fold"><div class="service__body">
+                <p class="service__text">PULSE transforma una nota sostenida en un patrón de impulsos controlable. Desde pulsos espaciados hasta repeticiones de alta densidad, permite construir tensión y movimiento rítmico sin multiplicar notas en el Piano Roll.</p>
+                <ul class="service__tags"><li>Patrón euclidiano</li><li>Velocidad variable</li><li>Decaimiento entre impulsos</li><li>Modulación con ENV y LFO</li></ul>
+              </div></div>
+            </li>
+            <li class="service" data-reveal="row">
+              <span class="service__num">02</span>
+              <h3 class="service__title">Synth</h3>
+              <div class="service__fold"><div class="service__body">
+                <p class="service__text">Un sintetizador diseñado para modelar un carácter propio: tablas de onda originales, filtro Acid y articulación Mono, Legato, Glide y Accent. Unison, BLEND, matriz de modulación y efectos integrados amplían el diseño sonoro.</p>
+                <ul class="service__tags"><li>Acid y Basic Shapes</li><li>Unison + BLEND</li><li>Matriz de modulación</li><li>Presets</li></ul>
+              </div></div>
+            </li>
+            <li class="service" data-reveal="row">
+              <span class="service__num">03</span>
+              <h3 class="service__title">Macros</h3>
+              <div class="service__fold"><div class="service__body">
+                <p class="service__text">Ocho macros por pista concentran hasta ocho parámetros cada una, con rangos independientes. El modo MAP permite asignarlas desde la interfaz y registrar sus movimientos como automatización.</p>
+                <ul class="service__tags"><li>Asignación con MAP</li><li>Rangos independientes</li><li>Automatización grabable</li><li>Control desde APC Key 25</li></ul>
+              </div></div>
+            </li>
+            <li class="service" data-reveal="row">
+              <span class="service__num">04</span>
+              <h3 class="service__title">Asistente de acordes</h3>
+              <div class="service__fold"><div class="service__body">
+                <p class="service__text">Explorá acordes de la escala, préstamos armónicos y referencias visuales dentro del Piano Roll. Escuchá cada posibilidad antes de incorporarla al clip.</p>
+                <ul class="service__tags"><li>Paleta armónica</li><li>Préstamos armónicos</li><li>Guías visuales</li><li>Escala global</li></ul>
+              </div></div>
+            </li>
+            <li class="service" data-reveal="row">
+              <span class="service__num">05</span>
+              <h3 class="service__title">Líneas</h3>
+              <div class="service__fold"><div class="service__body">
+                <p class="service__text">Configurá escenas que activan una fila completa o una selección de clips. Cada Línea conserva sus referencias aunque reorganices la sesión y entra al comienzo del siguiente compás.</p>
+                <ul class="service__tags"><li>Lanzamiento cuantizado</li><li>Escenas personalizadas</li><li>Control desde APC Key 25</li></ul>
+              </div></div>
+            </li>
+            <li class="service" data-reveal="row">
+              <span class="service__num">06</span>
+              <h3 class="service__title">Congelación reversible</h3>
+              <div class="service__fold"><div class="service__body">
+                <p class="service__text">Renderizá pistas exigentes para liberar recursos sin renunciar a la edición. Al descongelar, recuperás notas, instrumento, efectos y modulación en su estado original.</p>
+                <ul class="service__tags"><li>Session y Arrangement</li><li>Optimización de recursos</li><li>Copia en WAV</li></ul>
+              </div></div>
+            </li>
+            <li class="service" data-reveal="row">
+              <span class="service__num">07</span>
+              <h3 class="service__title">Efectos de performance</h3>
+              <div class="service__fold"><div class="service__body">
+                <p class="service__text">Una cadena de efectos orientada a la interpretación: Echo, Reverb, Compresor, Auto Pan y un Gater por pasos sincronizado con el tempo. Ajustá el movimiento del sonido mientras la sesión continúa.</p>
+                <ul class="service__tags"><li>Gater por pasos</li><li>Reverb</li><li>Echo</li><li>Compresor</li></ul>
+              </div></div>
+            </li>
+            <li class="service" id="tutorial" data-reveal="row">
+              <span class="service__num">08</span>
+              <h3 class="service__title">Aprendizaje guiado</h3>
+              <div class="service__fold"><div class="service__body">
+                <p class="service__text">Un recorrido guiado presenta cada herramienta en contexto y convierte cada ejercicio en un resultado audible. Incluye dos itinerarios: Cómo funciona Axion y Teoría musical.</p>
+                <ul class="service__tags"><li>Ayuda contextual</li><li>Proyecto de ejemplo</li><li>Teoría musical</li></ul>
+              </div></div>
+            </li>
+          </ol>
+        </div>
+      </section>
+
+      <!-- ============ 04 LA APP (stacked cards) ============ -->
+      <section class="home-section products" id="app" data-scroll-buffer="0.7" data-frame-section-number="04" data-frame-section-label="Interfaz">
+        <div class="products__intro">
+          <p class="section-label"><span>04</span>Interfaz</p>
+          <h2 class="home-section__heading">Una mirada <span>al instrumento.</span></h2>
+        </div>
+        <div class="product-stage" data-nav-compact>
+          <article class="product-panel surface-white">
+            <div class="product-panel__head">
+              <h3 class="product-panel__name"><span class="product-panel__name-line">Session View</span></h3>
+              <span class="product-panel__status"><span>Captura de producto · Android</span></span>
+              <span class="product-panel__rule"></span>
+            </div>
+            <div class="product-panel__body">
+              <div class="product-panel__info">
+                <p class="product-panel__text" data-arrive-words>La Session View organiza ocho pistas y cinco espacios por pista en un entorno preparado para interpretar ideas en tiempo real. Activá clips y Líneas con entradas cuantizadas; el mixer permanece al alcance de la mano.</p>
+                <a class="text-link" href="#funciones">Explorar herramientas <svg viewBox="0 0 16 16" width="14" height="14"><path d="M1 8h13M9 3l5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></a>
+              </div>
+              <figure class="product-panel__media"><img src="assets/session.png" alt="Session View de Axion Pulse en Android: ocho pistas, clips y controles de mezcla"></figure>
+            </div>
+          </article>
+          <article class="product-panel surface-white">
+            <div class="product-panel__head">
+              <h3 class="product-panel__name"><span class="product-panel__name-line">Armonía</span></h3>
+              <span class="product-panel__status"><span>Captura de producto · Android</span></span>
+              <span class="product-panel__rule"></span>
+            </div>
+            <div class="product-panel__body">
+              <div class="product-panel__info">
+                <p class="product-panel__text" data-arrive-words>El Piano Roll reúne escala resaltada, guías visuales y Asistente de acordes. Explorá opciones armónicas, escuchalas y sumalas al clip sin salir del flujo de edición.</p>
+                <a class="text-link" href="#funciones">Explorar armonía <svg viewBox="0 0 16 16" width="14" height="14"><path d="M1 8h13M9 3l5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></a>
+              </div>
+              <figure class="product-panel__media"><img src="assets/harmony.png" alt="Piano Roll de Axion Pulse con escala resaltada y Asistente de acordes"></figure>
+            </div>
+          </article>
+          <article class="product-panel surface-white">
+            <div class="product-panel__head">
+              <h3 class="product-panel__name"><span class="product-panel__name-line">PULSE</span></h3>
+              <span class="product-panel__status"><span>Visualización animada</span></span>
+              <span class="product-panel__rule"></span>
+            </div>
+            <div class="product-panel__body">
+              <div class="product-panel__info">
+                <p class="product-panel__text" data-arrive-words>Una nota sostenida puede convertirse en una secuencia de impulsos. Su velocidad evoluciona hasta generar texturas densas; automatizá esa progresión en Arrangement para diseñar transiciones precisas.</p>
+                <a class="text-link" href="#funciones">Descubrir PULSE <svg viewBox="0 0 16 16" width="14" height="14"><path d="M1 8h13M9 3l5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></a>
+              </div>
+              <figure class="product-panel__media product-panel__media--canvas"><canvas class="pulse-visual" aria-label="Visualización de impulsos de PULSE a velocidad creciente"></canvas></figure>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <!-- ============ 05 PARA QUIÉN ============ -->
+      <section class="home-section audience" id="para-quien" data-frame-section-number="05" data-frame-section-label="Para quién">
+        <p class="section-label"><span>05</span>Para quién</p>
+        <h2 class="home-section__heading">Cada forma <span>de crear.</span></h2>
+        <ul class="audience__list">
+          <li class="audience__row" data-reveal="row"><span class="audience__num">01</span><h3>DJs que comienzan</h3><p>Construí una base con clips y llevála a una sesión en vivo desde una interfaz que invita a experimentar.</p></li>
+          <li class="audience__row" data-reveal="row"><span class="audience__num">02</span><h3>Productores musicales</h3><p>De la síntesis al Arrangement: herramientas para desarrollar techno, psytrance y progressive con control sobre cada detalle.</p></li>
+          <li class="audience__row" data-reveal="row"><span class="audience__num">03</span><h3>Artistas en vivo</h3><p>Articulá clips, Líneas y macros con precisión; integrá un APC Key 25 para una interpretación más física.</p></li>
+          <li class="audience__row" data-reveal="row"><span class="audience__num">04</span><h3>Quienes aprenden</h3><p>Explorá producción y teoría musical a través de recorridos guiados dentro de la aplicación.</p></li>
+        </ul>
+      </section>
+
+      <!-- ============ 06 REGLA #0 (stage) ============ -->
+      <section class="home-section rule0" data-frame-section-number="06" data-frame-section-label="Compromiso">
+        <p class="section-label"><span>06</span>Compromiso</p>
+        <div class="rule0__stage">
+          <div class="rule0__pin">
+            <figure class="rule0__portrait"><img src="assets/session.png" alt=""></figure>
+            <h2 class="home-section__heading rule0__name">
+              <span class="rule0__first"><span class="rule0__word" data-chars>Regla</span></span>
+              <span class="rule0__last"><span class="rule0__word" data-chars>#0</span></span>
+            </h2>
+          </div>
+        </div>
+        <div class="rule0__story">
+          <span class="rule0__aside" data-reveal="fade">(Nuestro principio)</span>
+          <p class="rule0__statement" data-lit-words>El audio es la prioridad absoluta. Edición, guardado y cambios de instrumento deben preservar su continuidad. Esa exigencia guía el motor nativo en C++ y los perfiles de rendimiento por dispositivo. Antes de publicar la versión Pro, la prueba es concreta: <em>treinta minutos continuos sin cortes</em> en un Pixel 9 Pro.</p>
+        </div>
+      </section>
+
+      <div class="pre-footer-spacer" aria-hidden="true"></div>
+
+      <!-- ============ FOOTER ============ -->
+      <footer class="footer" id="footer" data-frame-section-number="07" data-frame-section-label="Lanzamiento">
+        <div class="footer__content">
+          <div class="footer__emblem">
+            <svg viewBox="0 0 589 435" aria-hidden="true">
+              <path class="mark-line" fill="none" stroke="currentColor" stroke-width="30" stroke-linejoin="round" stroke-linecap="round" d="M30 251H78C103 251 118 207 140 207C154 207 165 219 175 235L206 284L277 31L356 404L399 296C419 246 434 207 454 207C477 207 494 251 520 251H559"/>
+            </svg>
+          </div>
+          <div class="footer__contact">
+            <p class="footer__caption" data-reveal="fade">El lanzamiento está tomando forma</p>
+            <button class="footer__cta" type="button" data-magnetic data-tooltip-title="Consultar disponibilidad">Muy pronto<span class="dot">.</span></button>
+            <p class="footer__status" aria-live="polite"></p>
+          </div>
+          <div class="footer__meta">
+            <p>Android · Windows · iOS en una etapa posterior</p>
+            <p>© 2026 Axion Pulse</p>
+          </div>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.20/dist/lenis.min.js"></script>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
